@@ -1,0 +1,57 @@
+WATER LEVEL IOT SYSTEM THAT SHOULD GIVE LIVE FEEDS OF THE CURRENT WATER LEVEL IN THE TANK TO THE APPLICATION ON A SMART PHONE
+
+#include <Wire.h>
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+ 
+char auth[] = "";//Enter your Auth token(sent by mail to u at the time of creating project in blynk app)
+char ssid[] = "";//Enter your WIFI name
+char pass[] = "";//Enter your WIFI password
+ 
+BlynkTimer timer;
+bool pinValue = 0;
+ 
+int trig =D3;
+int echo =D4;
+int relay =D5;
+ 
+void setup() {
+  pinMode(trig, OUTPUT);
+  pinMode(echo, INPUT);
+  pinMode(relay, OUTPUT);
+  Wire.begin(D2, D1);
+  Serial.begin(9600);
+  Blynk.begin(auth, ssid, pass);
+  timer.setInterval(10L, Wlevel);
+  digitalWrite(relay, HIGH);
+}
+ 
+BLYNK_WRITE(V0) {
+  pinValue = param.asInt();
+}
+ 
+void loop() {
+  Blynk.run();
+  timer.run();
+}
+ 
+void Wlevel() {
+  if (pinValue == 1) {
+    digitalWrite(relay, LOW);
+  } else if (pinValue == 0) {
+    digitalWrite(relay, HIGH);
+  }
+ 
+  digitalWrite(trig, LOW);
+  delayMicroseconds(4);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  long t = pulseIn(echo, HIGH);
+  long cm = t / 29 / 2;
+ 
+  Blynk.virtualWrite(V1, cm);
+  Serial.println(cm);
+}
+
